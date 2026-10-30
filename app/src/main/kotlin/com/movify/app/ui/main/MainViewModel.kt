@@ -18,8 +18,8 @@ class MainViewModel(
     private val repository: MovieRepository,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
-    private val mutableUiState = MutableStateFlow(MovieListUiState.idle())
-    val uiState: StateFlow<MovieListUiState> = mutableUiState.asStateFlow()
+    private val _uiState = MutableStateFlow<MovieListUiState>(MovieListUiState.Idle)
+    val uiState: StateFlow<MovieListUiState> = _uiState.asStateFlow()
     private var request: Job? = null
 
     init {
@@ -28,15 +28,15 @@ class MainViewModel(
 
     fun loadMovies() {
         request?.cancel()
-        mutableUiState.value = MovieListUiState.loading()
+        _uiState.value = MovieListUiState.Loading
         request = viewModelScope.launch {
             try {
                 val movies = withContext(ioDispatcher) { repository.getMovies() }
-                mutableUiState.value = MovieListUiState.success(movies)
+                _uiState.value = MovieListUiState.Success(movies)
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Exception) {
-                mutableUiState.value = MovieListUiState.error(error)
+                _uiState.value = MovieListUiState.Error(error)
             }
         }
     }

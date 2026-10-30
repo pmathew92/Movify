@@ -19,9 +19,12 @@ TMDB API
 - Activities render state and forward user actions. They collect with
   `lifecycleScope` and `repeatOnLifecycle(STARTED)`, which stops collection while
   the screen is inactive and resumes with the latest state.
-- ViewModels expose read-only `StateFlow` for loading, results, empty and error
-  states. Kotlin data classes give UI states and movie models value equality.
-  ViewModel state survives activity recreation.
+- ViewModels expose read-only `StateFlow<MovieListUiState>`. The sealed interface
+  has four mutually exclusive states: `Idle`, `Loading`, `Error(error)` and
+  `Success(movies)`. Only success carries movies; only error carries a throwable.
+  Empty result lists are represented by `Success(emptyList())`. Activities render
+  the states with exhaustive `when` expressions. Data objects and data classes
+  provide value equality, and ViewModel state survives activity recreation.
 - Requests and debounce timers run in `viewModelScope`. Cancellation is rethrown
   rather than rendered as an error. Clearing a ViewModel cancels its requests.
 - Search debounces typing for 300 ms, cancels previous requests immediately when

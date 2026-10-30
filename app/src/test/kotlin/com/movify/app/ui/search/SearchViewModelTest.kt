@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModelStore
 import com.movify.app.models.Result
 import com.movify.app.testing.FakeMovieRepository
 import com.movify.app.testing.MainDispatcherRule
-import com.movify.app.ui.common.MovieListUiState.Status
+import com.movify.app.ui.common.MovieListUiState
 import java.io.IOException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -42,7 +42,7 @@ class SearchViewModelTest {
         advanceTimeBy(1000)
         runCurrent()
         assertTrue(repository.searchQueries.isEmpty())
-        assertEquals(Status.IDLE, viewModel.uiState.value.status)
+        assertEquals(MovieListUiState.Idle, viewModel.uiState.value)
     }
 
     @Test
@@ -50,14 +50,14 @@ class SearchViewModelTest {
         viewModel.setQuery("star")
         advanceTimeBy(299)
         assertTrue(repository.searchQueries.isEmpty())
-        assertEquals(Status.LOADING, viewModel.uiState.value.status)
+        assertEquals(MovieListUiState.Loading, viewModel.uiState.value)
 
         viewModel.setQuery("  star wars  ")
         advanceTimeBy(300)
         runCurrent()
         assertEquals(listOf("star wars"), repository.searchQueries)
         assertEquals("star wars", viewModel.query)
-        assertEquals(Status.SUCCESS, viewModel.uiState.value.status)
+        assertEquals(MovieListUiState.Success(emptyList()), viewModel.uiState.value)
     }
 
     @Test
@@ -87,12 +87,15 @@ class SearchViewModelTest {
         assertEquals(0, repository.activeSearchRequests)
         first.complete(listOf(Result(id = 1, title = "Stale")))
         runCurrent()
-        assertEquals(Status.LOADING, viewModel.uiState.value.status)
+        assertEquals(MovieListUiState.Loading, viewModel.uiState.value)
         advanceTimeBy(300)
         runCurrent()
         second.complete(listOf(Result(id = 2, title = "Current")))
         runCurrent()
-        assertEquals("Current", viewModel.uiState.value.movies.single().title)
+        assertEquals(
+            MovieListUiState.Success(listOf(Result(id = 2, title = "Current"))),
+            viewModel.uiState.value,
+        )
     }
 
     @Test
@@ -109,8 +112,7 @@ class SearchViewModelTest {
         assertEquals(0, repository.activeSearchRequests)
         response.complete(listOf(Result(id = 1, title = "Stale")))
         runCurrent()
-        assertEquals(Status.IDLE, viewModel.uiState.value.status)
-        assertTrue(viewModel.uiState.value.movies.isEmpty())
+        assertEquals(MovieListUiState.Idle, viewModel.uiState.value)
     }
 
     @Test
@@ -120,13 +122,15 @@ class SearchViewModelTest {
         viewModel.setQuery("offline")
         advanceTimeBy(300)
         runCurrent()
-        assertEquals(Status.ERROR, viewModel.uiState.value.status)
+        assertTrue(viewModel.uiState.value is MovieListUiState.Error)
 
         viewModel.setQuery("online")
         advanceTimeBy(300)
         runCurrent()
-        assertEquals(Status.SUCCESS, viewModel.uiState.value.status)
-        assertEquals("Found", viewModel.uiState.value.movies.single().title)
+        assertEquals(
+            MovieListUiState.Success(listOf(Result(id = 2, title = "Found"))),
+            viewModel.uiState.value,
+        )
     }
 
     @Test
@@ -135,14 +139,14 @@ class SearchViewModelTest {
         viewModel.setQuery("movie")
         advanceTimeBy(300)
         runCurrent()
-        assertEquals(Status.ERROR, viewModel.uiState.value.status)
+        assertTrue(viewModel.uiState.value is MovieListUiState.Error)
 
         repository.searchResponses["movie"] = { emptyList() }
         viewModel.retry()
         advanceTimeBy(300)
         runCurrent()
         assertEquals(2, repository.searchQueries.size)
-        assertEquals(Status.SUCCESS, viewModel.uiState.value.status)
+        assertEquals(MovieListUiState.Success(emptyList()), viewModel.uiState.value)
     }
 
     @Test
@@ -166,6 +170,6 @@ class SearchViewModelTest {
         store.clear()
         runCurrent()
         assertEquals(0, repository.activeSearchRequests)
-        assertEquals(Status.LOADING, viewModel.uiState.value.status)
+        assertEquals(MovieListUiState.Loading, viewModel.uiState.value)
     }
 }

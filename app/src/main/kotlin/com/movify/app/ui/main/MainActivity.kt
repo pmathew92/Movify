@@ -56,15 +56,23 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun render(state: MovieListUiState) {
-        val loading = state.status == MovieListUiState.Status.LOADING
-        val error = state.status == MovieListUiState.Status.ERROR
-        val hasMovies = state.movies.isNotEmpty()
+        val movies = when (state) {
+            is MovieListUiState.Success -> state.movies
+            MovieListUiState.Idle, MovieListUiState.Loading, is MovieListUiState.Error -> emptyList()
+        }
+        val message = when (state) {
+            MovieListUiState.Idle, MovieListUiState.Loading -> R.string.no_movies
+            is MovieListUiState.Error -> R.string.error_loading_movies
+            is MovieListUiState.Success -> R.string.no_movies
+        }
+        val loading = state is MovieListUiState.Loading
+        val hasMovies = movies.isNotEmpty()
         binding.progressBar.visibility = if (loading) View.VISIBLE else View.GONE
         binding.rvMovies.visibility = if (hasMovies) View.VISIBLE else View.GONE
         binding.stateContainer.visibility = if (!loading && !hasMovies) View.VISIBLE else View.GONE
-        binding.retryButton.visibility = if (error) View.VISIBLE else View.GONE
-        binding.tvStatus.setText(if (error) R.string.error_loading_movies else R.string.no_movies)
-        adapter.submitList(state.movies)
+        binding.retryButton.visibility = if (state is MovieListUiState.Error) View.VISIBLE else View.GONE
+        binding.tvStatus.setText(message)
+        adapter.submitList(movies)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {

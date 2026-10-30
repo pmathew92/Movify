@@ -19,7 +19,7 @@ class SearchViewModel(
     private val repository: MovieRepository,
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
-    private val mutableUiState = MutableStateFlow(MovieListUiState.idle())
+    private val mutableUiState = MutableStateFlow<MovieListUiState>(MovieListUiState.Idle)
     val uiState: StateFlow<MovieListUiState> = mutableUiState.asStateFlow()
     private var request: Job? = null
     private var currentQuery: String = ""
@@ -42,22 +42,22 @@ class SearchViewModel(
     private fun search() {
         request?.cancel()
         if (query.isEmpty()) {
-            mutableUiState.value = MovieListUiState.idle()
+            mutableUiState.value = MovieListUiState.Idle
             return
         }
         val requestedQuery = query
-        mutableUiState.value = MovieListUiState.loading()
+        mutableUiState.value = MovieListUiState.Loading
         request = viewModelScope.launch {
             try {
                 delay(DEBOUNCE_MILLIS)
                 val movies = withContext(ioDispatcher) {
                     repository.searchMovies(requestedQuery)
                 }
-                mutableUiState.value = MovieListUiState.success(movies)
+                mutableUiState.value = MovieListUiState.Success(movies)
             } catch (cancelled: CancellationException) {
                 throw cancelled
             } catch (error: Exception) {
-                mutableUiState.value = MovieListUiState.error(error)
+                mutableUiState.value = MovieListUiState.Error(error)
             }
         }
     }

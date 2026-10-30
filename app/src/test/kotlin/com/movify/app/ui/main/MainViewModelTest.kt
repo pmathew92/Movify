@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModelStore
 import com.movify.app.models.Result
 import com.movify.app.testing.FakeMovieRepository
 import com.movify.app.testing.MainDispatcherRule
-import com.movify.app.ui.common.MovieListUiState.Status
+import com.movify.app.ui.common.MovieListUiState
 import java.io.IOException
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -33,15 +33,17 @@ class MainViewModelTest {
         val response = CompletableDeferred<List<Result>>()
         repository.discoveryResponse = { response.await() }
         val viewModel = createViewModel()
-        assertEquals(Status.LOADING, viewModel.uiState.value.status)
+        assertEquals(MovieListUiState.Loading, viewModel.uiState.value)
         runCurrent()
 
         response.complete(listOf(Result(id = 42, title = "Test Movie")))
         runCurrent()
 
         assertEquals(1, repository.discoveryCalls)
-        assertEquals(Status.SUCCESS, viewModel.uiState.value.status)
-        assertEquals("Test Movie", viewModel.uiState.value.movies.single().title)
+        assertEquals(
+            MovieListUiState.Success(listOf(Result(id = 42, title = "Test Movie"))),
+            viewModel.uiState.value,
+        )
     }
 
     @Test
@@ -50,17 +52,16 @@ class MainViewModelTest {
         repository.discoveryResponse = { throw failure }
         val viewModel = createViewModel()
         runCurrent()
-        assertEquals(Status.ERROR, viewModel.uiState.value.status)
-        assertTrue(viewModel.uiState.value.error is IOException)
-        assertEquals(failure.message, viewModel.uiState.value.error?.message)
+        val errorState = viewModel.uiState.value as MovieListUiState.Error
+        assertTrue(errorState.error is IOException)
+        assertEquals(failure.message, errorState.error.message)
 
         repository.discoveryResponse = { emptyList() }
         viewModel.loadMovies()
         runCurrent()
 
         assertEquals(2, repository.discoveryCalls)
-        assertEquals(Status.SUCCESS, viewModel.uiState.value.status)
-        assertTrue(viewModel.uiState.value.movies.isEmpty())
+        assertEquals(MovieListUiState.Success(emptyList()), viewModel.uiState.value)
     }
 
     @Test
@@ -78,11 +79,14 @@ class MainViewModelTest {
         assertEquals(1, repository.activeDiscoveryRequests)
         first.complete(listOf(Result(id = 1, title = "Stale")))
         runCurrent()
-        assertEquals(Status.LOADING, viewModel.uiState.value.status)
+        assertEquals(MovieListUiState.Loading, viewModel.uiState.value)
 
         second.complete(listOf(Result(id = 2, title = "Current")))
         runCurrent()
-        assertEquals("Current", viewModel.uiState.value.movies.single().title)
+        assertEquals(
+            MovieListUiState.Success(listOf(Result(id = 2, title = "Current"))),
+            viewModel.uiState.value,
+        )
     }
 
     @Test
@@ -98,7 +102,7 @@ class MainViewModelTest {
         assertEquals(0, repository.activeDiscoveryRequests)
         response.complete(emptyList())
         runCurrent()
-        assertEquals(Status.LOADING, viewModel.uiState.value.status)
+        assertEquals(MovieListUiState.Loading, viewModel.uiState.value)
     }
 
     @Test
@@ -108,8 +112,10 @@ class MainViewModelTest {
         runCurrent()
 
         val latestState = viewModel.uiState.first()
-        assertEquals(Status.SUCCESS, latestState.status)
-        assertEquals("Retained", latestState.movies.single().title)
+        assertEquals(
+            MovieListUiState.Success(listOf(Result(id = 42, title = "Retained"))),
+            latestState,
+        )
         assertEquals(1, repository.discoveryCalls)
     }
 

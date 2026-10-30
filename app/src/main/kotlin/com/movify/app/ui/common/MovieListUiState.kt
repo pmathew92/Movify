@@ -1,26 +1,13 @@
 package com.movify.app.ui.common
 
 import com.movify.app.models.Result
-import java.util.Collections
 
-@ConsistentCopyVisibility
-data class MovieListUiState private constructor(
-    val status: Status,
-    val movies: List<Result> = emptyList(),
-    val error: Throwable? = null,
-) {
-    enum class Status { IDLE, LOADING, SUCCESS, ERROR }
+sealed interface MovieListUiState {
+    data object Idle : MovieListUiState
 
-    companion object {
-        fun idle() = MovieListUiState(Status.IDLE)
+    data object Loading : MovieListUiState
 
-        fun loading() = MovieListUiState(Status.LOADING)
+    data class Error(val error: Throwable) : MovieListUiState
 
-        fun success(movies: List<Result>) = MovieListUiState(
-            Status.SUCCESS,
-            Collections.unmodifiableList(ArrayList(movies)),
-        )
-
-        fun error(error: Throwable) = MovieListUiState(Status.ERROR, error = error)
-    }
+    data class Success(val movies: List<Result>) : MovieListUiState
 }
