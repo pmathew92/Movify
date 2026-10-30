@@ -2,6 +2,18 @@ plugins {
     id 'com.android.application'
 }
 
+def secretsProperties = new Properties()
+def secretsFile = rootProject.file('secrets.properties')
+if (secretsFile.isFile()) {
+    secretsFile.withInputStream { secretsProperties.load(it) }
+}
+def tmdbApiKey = providers.environmentVariable('TMDB_API_KEY')
+        .orElse(secretsProperties.getProperty('TMDB_API_KEY', ''))
+        .get().trim()
+if (tmdbApiKey.isEmpty()) {
+    throw new GradleException('Missing TMDB_API_KEY. Set it in the ignored secrets.properties file or as an environment variable.')
+}
+
 android {
     namespace = 'com.movify.app'
     compileSdk = 36
@@ -13,6 +25,7 @@ android {
         versionCode = 1
         versionName = '1.0'
         testInstrumentationRunner = 'androidx.test.runner.AndroidJUnitRunner'
+        buildConfigField 'String', 'TMDB_API_KEY', groovy.json.JsonOutput.toJson(tmdbApiKey)
     }
 
     buildTypes {
@@ -24,6 +37,7 @@ android {
 
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 
     compileOptions {

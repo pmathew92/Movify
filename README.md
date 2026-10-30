@@ -52,6 +52,18 @@ The project uses Android Gradle Plugin 9.4.1 and the Gradle 9.6 wrapper. It targ
 Android 16 (API 36) and retains Android 5.0 (API 21) as its minimum version.
 Glide 4.16.0 is used because Glide 5 requires API 23.
 
+Before building, copy `secrets.properties.example` to `secrets.properties` at the
+project root and set `TMDB_API_KEY` to your TMDB API key. The local secrets file
+is ignored by Git. For CI, set the `TMDB_API_KEY` environment variable instead;
+it takes precedence over the local file. Builds fail with a setup message if
+the key is missing. Never commit a populated secrets file.
+
+Gradle generates `BuildConfig.TMDB_API_KEY`, which `AppContainer` passes to the
+repository. The key is absent from tracked resources and configuration. It is
+still bundled in the APK, so this is source-control protection, not protection
+against APK inspection. Rotate any key that was previously committed; deleting
+it from current files does not remove it from Git history.
+
 ```sh
 ./gradlew build :app:assembleDebugAndroidTest
 ```
@@ -62,8 +74,7 @@ They use fake repositories, `runTest` and virtual coroutine test dispatchers;
 no live TMDB requests are made by the tests.
 
 Run device tests with `./gradlew :app:connectedDebugAndroidTest` when an emulator
-or Android device is connected. API requests use HTTPS. The existing TMDB key is
-read from the `api_key` string resource by `AppContainer`.
+or Android device is connected. API requests use HTTPS.
 
 ## Original tutorial
 
