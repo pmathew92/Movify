@@ -1,4 +1,10 @@
 <resources>
     <string name="app_name">Movify</string>
     <string name="api_key">004cbaf19212094e32aa9ef6f6577f22</string>
+    <string name="search_hint">Enter movie name…</string>
+    <string name="search_prompt">Search for a movie</string>
+    <string name="no_movies">No movies available</string>
+    <string name="no_search_results">No movies found</string>
+    <string name="error_loading_movies">Unable to load movies. Please try again.</string>
+    <string name="retry">Retry</string>
 </resources>
