@@ -1,20 +1,22 @@
 package com.movify.app.models
 
-import com.google.gson.annotations.SerializedName
+import kotlinx.serialization.SerialName
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class Result(
-    @field:SerializedName("vote_count") val voteCount: Int? = null,
-    @field:SerializedName("id") val id: Int? = null,
-    @field:SerializedName("video") val video: Boolean? = null,
-    @field:SerializedName("vote_average") val voteAverage: Float? = null,
-    @field:SerializedName("title") val title: String? = null,
-    @field:SerializedName("popularity") val popularity: Float? = null,
-    @field:SerializedName("poster_path") val posterPath: String? = null,
-    @field:SerializedName("original_language") val originalLanguage: String? = null,
-    @field:SerializedName("original_title") val originalTitle: String? = null,
-    @field:SerializedName("genre_ids") val genreIds: List<Int>? = null,
-    @field:SerializedName("backdrop_path") val backdropPath: String? = null,
-    @field:SerializedName("adult") val adult: Boolean? = null,
-    @field:SerializedName("overview") val overview: String? = null,
-    @field:SerializedName("release_date") val releaseDate: String? = null,
+    @SerialName("vote_count") val voteCount: Int? = null,
+    @SerialName("id") val id: Int? = null,
+    @SerialName("video") val video: Boolean? = null,
+    @SerialName("vote_average") val voteAverage: Float? = null,
+    @SerialName("title") val title: String? = null,
+    @SerialName("popularity") val popularity: Float? = null,
+    @SerialName("poster_path") val posterPath: String? = null,
+    @SerialName("original_language") val originalLanguage: String? = null,
+    @SerialName("original_title") val originalTitle: String? = null,
+    @SerialName("genre_ids") val genreIds: List<Int>? = null,
+    @SerialName("backdrop_path") val backdropPath: String? = null,
+    @SerialName("adult") val adult: Boolean? = null,
+    @SerialName("overview") val overview: String? = null,
+    @SerialName("release_date") val releaseDate: String? = null,
 )

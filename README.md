@@ -1,7 +1,7 @@
 # Movify
 
 Movify is a Kotlin Android application built with MVVM, the repository pattern,
-StateFlow, coroutines, AndroidX, Retrofit and Glide.
+StateFlow, coroutines, AndroidX, Retrofit, kotlinx.serialization and Glide.
 The application ID and namespace are `com.movify.app`.
 
 ## Architecture
@@ -34,6 +34,9 @@ TMDB API
   Dependencies are passed through constructors. No DI framework is required.
   Activities obtain their ViewModels through `ViewModelProvider`.
 - `MoviesAdapter` uses `ListAdapter` and `DiffUtil` to update the existing list.
+- Retrofit uses the kotlinx.serialization converter. API models use `@Serializable`
+  and `@SerialName` for the TMDB field names, with nullable defaults for optional
+  values. The shared JSON configuration ignores unknown response fields.
 
 All app and test sources are Kotlin, under `src/main/kotlin`, `src/test/kotlin`
 and `src/androidTest/kotlin`. Kotlin compilation comes from AGP 9.4.1.
@@ -41,6 +44,8 @@ and `src/androidTest/kotlin`. Kotlin compilation comes from AGP 9.4.1.
 Lifecycle 2.9.4 and the existing AndroidX/Glide versions retain API 21 support.
 Coroutines core, Android and test libraries use version 1.10.2. View Binding is
 provided by the Android Gradle plugin and needs no runtime dependency.
+Serialization uses compiler plugin 2.2.10 (matching AGP's built-in Kotlin compiler),
+JSON runtime 1.9.0, and Retrofit converter 3.0.0.
 
 ## Building
 
@@ -68,7 +73,8 @@ it from current files does not remove it from Git history.
 ./gradlew build :app:assembleDebugAndroidTest
 ```
 
-Local tests cover Retrofit deserialization and HTTP errors, repository mapping,
+Local tests cover Retrofit deserialization, unknown/null/missing JSON fields,
+malformed responses and HTTP errors, repository mapping,
 ViewModel state transitions, retries, search debouncing, cancellation and cleanup.
 They use fake repositories, `runTest` and virtual coroutine test dispatchers;
 no live TMDB requests are made by the tests.
