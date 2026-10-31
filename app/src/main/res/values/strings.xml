@@ -6,4 +6,6 @@
     <string name="no_search_results">No movies found</string>
     <string name="error_loading_movies">Unable to load movies. Please try again.</string>
     <string name="retry">Retry</string>
+    <string name="movie_poster_description">Poster for %1$s</string>
+    <string name="untitled_movie">Untitled movie</string>
 </resources>
