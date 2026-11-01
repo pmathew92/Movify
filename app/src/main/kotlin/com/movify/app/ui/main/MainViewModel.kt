@@ -11,6 +11,7 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -21,15 +22,11 @@ class MainViewModel(
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModel() {
     private val _uiState = MutableStateFlow<MovieListUiState>(MovieListUiState.Idle)
-    val uiState: StateFlow<MovieListUiState> = _uiState
-        .onStart {
-            loadMovies()
-        }
-        .stateIn(
-            viewModelScope, SharingStarted.WhileSubscribed(5000),
-            MovieListUiState.Idle
-        )
+    val uiState: StateFlow<MovieListUiState> = _uiState.asStateFlow()
 
+    init {
+        loadMovies()
+    }
 
     private var request: Job? = null
 
