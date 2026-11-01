@@ -119,7 +119,7 @@ class MainViewModelTest {
         assertEquals(1, repository.discoveryCalls)
     }
 
-    private fun createViewModel() = MainViewModel(repository, mainDispatcherRule.dispatcher).also {
+    private fun createViewModel() = MainViewModel(repository).also {
         store.put("main", it)
     }
 }

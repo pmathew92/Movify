@@ -27,7 +27,7 @@ class SearchViewModelTest {
 
     @Before
     fun setUp() {
-        viewModel = SearchViewModel(repository, mainDispatcherRule.dispatcher)
+        viewModel = SearchViewModel(repository)
         store.put("search", viewModel)
     }
 

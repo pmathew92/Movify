@@ -5,17 +5,14 @@ import androidx.lifecycle.ViewModelProvider
 import com.movify.app.data.repository.MovieRepository
 import com.movify.app.ui.main.MainViewModel
 import com.movify.app.ui.search.SearchViewModel
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Dispatchers
 
 class MovieViewModelFactory(
     private val repository: MovieRepository,
-    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
 ) : ViewModelProvider.Factory {
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
         val viewModel = when (modelClass) {
-            MainViewModel::class.java -> MainViewModel(repository, ioDispatcher)
-            SearchViewModel::class.java -> SearchViewModel(repository, ioDispatcher)
+            MainViewModel::class.java -> MainViewModel(repository)
+            SearchViewModel::class.java -> SearchViewModel(repository)
             else -> throw IllegalArgumentException("Unknown ViewModel: ${modelClass.name}")
         }
         return checkNotNull(modelClass.cast(viewModel))

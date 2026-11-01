@@ -5,6 +5,9 @@ import com.movify.app.models.Result
 import com.movify.app.network.NetworkInterface
 import java.io.IOException
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.currentCoroutineContext
+import kotlin.coroutines.ContinuationInterceptor
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertSame
 import org.junit.Assert.assertThrows
@@ -14,10 +17,11 @@ import org.junit.Test
 
 class MovieRepositoryImplTest {
     private val service = FakeService()
-    private val repository: MovieRepository = MovieRepositoryImpl(service, "test-key")
+    private val dispatcher = StandardTestDispatcher()
+    private val repository: MovieRepository = MovieRepositoryImpl(service, "test-key", dispatcher)
 
     @Test
-    fun discoveryMapsMovieListAndSuppliesApiKey() = runTest {
+    fun discoveryMapsMovieListAndSuppliesApiKey() = runTest(dispatcher) {
         val movies = mutableListOf(Result(id = 42, title = "Test Movie"))
         service.response = { MovieResponse(1, 1, 1, movies) }
         val actual = repository.getMovies()
@@ -30,7 +34,7 @@ class MovieRepositoryImplTest {
     }
 
     @Test
-    fun searchForwardsQueryAndMapsResponse() = runTest {
+    fun searchForwardsQueryAndMapsResponse() = runTest(dispatcher) {
         service.response = { MovieResponse(results = listOf(Result(id = 7, title = "Wall-E"))) }
         val actual = repository.searchMovies("Wall-E & friends")
 
@@ -40,14 +44,14 @@ class MovieRepositoryImplTest {
     }
 
     @Test
-    fun missingResultsBecomeAnEmptyList() = runTest {
+    fun missingResultsBecomeAnEmptyList() = runTest(dispatcher) {
         service.response = { MovieResponse() }
         assertTrue(repository.getMovies().isEmpty())
         assertTrue(repository.searchMovies("missing").isEmpty())
     }
 
     @Test
-    fun networkFailuresPropagateToTheCaller() = runTest {
+    fun networkFailuresPropagateToTheCaller() = runTest(dispatcher) {
         val failure = IOException("offline")
         service.response = { throw failure }
         for (request in listOf<suspend () -> List<Result>>(
@@ -57,9 +61,22 @@ class MovieRepositoryImplTest {
                 request()
                 fail("Expected the network failure")
             } catch (actual: IOException) {
-                assertSame(failure, actual)
+                assertEquals(failure.javaClass, actual.javaClass)
+                assertEquals(failure.message, actual.message)
             }
         }
+    }
+
+    @Test
+    fun bothRequestsUseTheInjectedDispatcher() = runTest {
+        val repositoryDispatcher = StandardTestDispatcher(testScheduler)
+        service.response = {
+            assertSame(repositoryDispatcher, currentCoroutineContext()[ContinuationInterceptor])
+            MovieResponse()
+        }
+        val repository = MovieRepositoryImpl(service, "test-key", repositoryDispatcher)
+        repository.getMovies()
+        repository.searchMovies("test")
     }
 
     private class FakeService : NetworkInterface {
