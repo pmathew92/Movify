@@ -5,7 +5,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.background
+import androidx.compose.ui.draw.clip
 import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -17,11 +20,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import com.movify.app.R
-import com.movify.app.models.Result
+import com.movify.app.ui.compose.model.MovieUiModel
 
 @Composable
 fun MovieCard(
-    movie: Result,
+    movie: MovieUiModel,
     modifier: Modifier = Modifier,
 ) {
     Card(
@@ -35,10 +38,7 @@ fun MovieCard(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             PosterImage(
-                imageUrl = movie.posterPath,
-                contentDescription = movie.title?.takeIf { it.isNotBlank() }?.let {
-                    stringResource(R.string.movie_poster_description, it)
-                },
+                imageUrl = movie.posterUrl,
             )
             MovieContent(movie = movie, modifier = Modifier.weight(1f))
         }
@@ -46,32 +46,30 @@ fun MovieCard(
 }
 
 @Composable
-fun PosterImage(
+private fun PosterImage(
     imageUrl: String?,
     modifier: Modifier = Modifier,
-    contentDescription: String? = null,
 ) {
-    val poster = imageUrl
-        ?.trim()
-        ?.trimStart('/')
-        ?.takeIf { it.isNotBlank() }
-        ?.let { "https://image.tmdb.org/t/p/w500/$it" }
-    val placeholder = painterResource(R.mipmap.ic_launcher)
+    val placeholder = painterResource(R.drawable.movie_poster_placeholder)
 
     AsyncImage(
-        model = poster,
-        contentDescription = contentDescription,
+        model = imageUrl,
+        contentDescription = null,
         placeholder = placeholder,
         error = placeholder,
         fallback = placeholder,
-        modifier = modifier.size(100.dp),
-        contentScale = ContentScale.Fit,
+        modifier = modifier
+            .width(100.dp)
+            .aspectRatio(2f / 3f)
+            .clip(MaterialTheme.shapes.small)
+            .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+        contentScale = ContentScale.Crop,
     )
 }
 
 @Composable
-fun MovieContent(
-    movie: Result,
+private fun MovieContent(
+    movie: MovieUiModel,
     modifier: Modifier = Modifier,
 ) {
     Column(

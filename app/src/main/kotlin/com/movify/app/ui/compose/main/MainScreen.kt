@@ -1,4 +1,4 @@
-package com.movify.app.ui.compose.component
+package com.movify.app.ui.compose.main
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -16,11 +16,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.movify.app.R
-import com.movify.app.ui.common.MovieListUiState
+import com.movify.app.ui.compose.component.MovieList
 
 @Composable
 fun MainScreen(
-    uiState: MovieListUiState,
+    uiState: MainScreenState,
     onRetry: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -29,9 +29,9 @@ fun MainScreen(
         contentAlignment = Alignment.Center,
     ) {
         when (uiState) {
-            MovieListUiState.Idle -> Unit
-            MovieListUiState.Loading -> CircularProgressIndicator()
-            is MovieListUiState.Error -> {
+            MainScreenState.Idle -> Unit
+            MainScreenState.Loading -> CircularProgressIndicator()
+            is MainScreenState.Error -> {
                 Column(
                     modifier = Modifier.padding(16.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -47,7 +47,7 @@ fun MainScreen(
                     }
                 }
             }
-            is MovieListUiState.Success -> {
+            is MainScreenState.Success -> {
                 if (uiState.movies.isEmpty()) {
                     Text(
                         text = stringResource(R.string.no_movies),

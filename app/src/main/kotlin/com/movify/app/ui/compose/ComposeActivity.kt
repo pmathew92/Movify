@@ -10,7 +10,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.movify.app.MyApplication
-import com.movify.app.ui.compose.component.MainRoute
+import com.movify.app.ui.compose.main.MainRoute
 import com.movify.app.ui.compose.theme.MovifyTheme
 import com.movify.app.ui.main.MainViewModel
 
